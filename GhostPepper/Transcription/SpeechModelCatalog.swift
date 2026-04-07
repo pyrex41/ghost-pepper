@@ -3,11 +3,18 @@ import Foundation
 enum SpeechBackendKind: Equatable {
     case whisperKit
     case fluidAudio
+    case moonshineMLX
 }
 
 enum FluidAudioModelVariant: Equatable {
     case parakeetV3
     case qwen3AsrInt8
+}
+
+enum MoonshineMLXModelVariant: Equatable {
+    case tiny
+    case small
+    case medium
 }
 
 struct SpeechModelDescriptor: Identifiable, Equatable {
@@ -18,6 +25,27 @@ struct SpeechModelDescriptor: Identifiable, Equatable {
     let backend: SpeechBackendKind
     let cachePathComponents: [String]
     let fluidAudioVariant: FluidAudioModelVariant?
+    let moonshineVariant: MoonshineMLXModelVariant?
+
+    init(
+        name: String,
+        pickerTitle: String,
+        variantName: String,
+        sizeDescription: String,
+        backend: SpeechBackendKind,
+        cachePathComponents: [String],
+        fluidAudioVariant: FluidAudioModelVariant? = nil,
+        moonshineVariant: MoonshineMLXModelVariant? = nil
+    ) {
+        self.name = name
+        self.pickerTitle = pickerTitle
+        self.variantName = variantName
+        self.sizeDescription = sizeDescription
+        self.backend = backend
+        self.cachePathComponents = cachePathComponents
+        self.fluidAudioVariant = fluidAudioVariant
+        self.moonshineVariant = moonshineVariant
+    }
 
     var id: String { name }
 
@@ -30,6 +58,8 @@ struct SpeechModelDescriptor: Identifiable, Equatable {
         case .whisperKit:
             "Whisper \(variantName) (\(pickerTitle.lowercased()))"
         case .fluidAudio:
+            "\(pickerTitle) (\(variantName.lowercased()))"
+        case .moonshineMLX:
             "\(pickerTitle) (\(variantName.lowercased()))"
         }
     }
@@ -48,8 +78,7 @@ enum SpeechModelCatalog {
         variantName: "tiny.en",
         sizeDescription: "~75 MB",
         backend: .whisperKit,
-        cachePathComponents: ["openai", "whisper-tiny.en"],
-        fluidAudioVariant: nil
+        cachePathComponents: ["openai", "whisper-tiny.en"]
     )
 
     static let whisperSmallEnglish = SpeechModelDescriptor(
@@ -58,8 +87,7 @@ enum SpeechModelCatalog {
         variantName: "small.en",
         sizeDescription: "~466 MB",
         backend: .whisperKit,
-        cachePathComponents: ["openai", "whisper-small.en"],
-        fluidAudioVariant: nil
+        cachePathComponents: ["openai", "whisper-small.en"]
     )
 
     static let whisperSmallMultilingual = SpeechModelDescriptor(
@@ -68,8 +96,7 @@ enum SpeechModelCatalog {
         variantName: "small",
         sizeDescription: "~466 MB",
         backend: .whisperKit,
-        cachePathComponents: ["openai", "whisper-small"],
-        fluidAudioVariant: nil
+        cachePathComponents: ["openai", "whisper-small"]
     )
 
     static let parakeetV3 = SpeechModelDescriptor(
@@ -92,13 +119,55 @@ enum SpeechModelCatalog {
         fluidAudioVariant: .qwen3AsrInt8
     )
 
+    #if arch(arm64)
+    static let moonshineTiny = SpeechModelDescriptor(
+        name: "moonshine_tiny",
+        pickerTitle: "Moonshine Tiny",
+        variantName: "43M params",
+        sizeDescription: "~170 MB",
+        backend: .moonshineMLX,
+        cachePathComponents: ["UsefulSensors", "moonshine-streaming-tiny"],
+        moonshineVariant: .tiny
+    )
+
+    static let moonshineSmall = SpeechModelDescriptor(
+        name: "moonshine_small",
+        pickerTitle: "Moonshine Small",
+        variantName: "147M params",
+        sizeDescription: "~590 MB",
+        backend: .moonshineMLX,
+        cachePathComponents: ["UsefulSensors", "moonshine-streaming-small"],
+        moonshineVariant: .small
+    )
+
+    static let moonshineMedium = SpeechModelDescriptor(
+        name: "moonshine_medium",
+        pickerTitle: "Moonshine Medium",
+        variantName: "245M params",
+        sizeDescription: "~980 MB",
+        backend: .moonshineMLX,
+        cachePathComponents: ["UsefulSensors", "moonshine-streaming-medium"],
+        moonshineVariant: .medium
+    )
+    #endif
+
     /// Models that are always selectable on the current OS.
-    private static let baseModels: [SpeechModelDescriptor] = [
-        whisperTiny,
-        whisperSmallEnglish,
-        whisperSmallMultilingual,
-        parakeetV3,
-    ]
+    private static let baseModels: [SpeechModelDescriptor] = {
+        var models = [
+            whisperTiny,
+            whisperSmallEnglish,
+            whisperSmallMultilingual,
+            parakeetV3,
+        ]
+        #if arch(arm64)
+        models.append(contentsOf: [
+            moonshineTiny,
+            moonshineSmall,
+            moonshineMedium,
+        ])
+        #endif
+        return models
+    }()
 
     static var availableModels: [SpeechModelDescriptor] {
         if #available(macOS 15, iOS 18, *) {

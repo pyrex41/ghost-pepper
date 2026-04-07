@@ -6,6 +6,8 @@
 
 **[Download the latest release](https://github.com/matthartman/ghost-pepper/releases/latest/download/GhostPepper.dmg)** — macOS 14.0+, Apple Silicon (M1+)
 
+> **Fork note:** This fork adds [Moonshine](https://github.com/usefulsensors/moonshine) speech models via [moonshine-mlx](https://github.com/kylehowells/moonshine-mlx), a pure-Swift Metal-accelerated backend. Moonshine models are optimized for on-device inference and offer a different accuracy/speed tradeoff compared to Whisper.
+
 ## Features
 
 - **Hold Control to talk** — release to transcribe and paste into any text field
@@ -27,6 +29,9 @@ Ghost Pepper uses open-source models that run entirely on your Mac. Models downl
 | Whisper small (multilingual) | ~466 MB | Multi-language support |
 | Parakeet v3 (25 languages) | ~1.4 GB | Multi-language via [FluidAudio](https://github.com/FluidInference/FluidAudio) |
 | Qwen3-ASR 0.6B int8 (50+ languages) | ~900 MB | Highest multilingual quality, macOS 15+ required |
+| Moonshine Tiny (43M) | ~170 MB | Fast, via [MLX](https://github.com/kylehowells/moonshine-mlx) |
+| Moonshine Small (147M) | ~590 MB | Balanced, via MLX |
+| Moonshine Medium (245M) | ~980 MB | Best Moonshine accuracy, via MLX |
 
 ### Cleanup models
 
@@ -36,7 +41,7 @@ Ghost Pepper uses open-source models that run entirely on your Mac. Models downl
 | Qwen 3.5 2B | ~1.3 GB | Fast (~4-5s) |
 | Qwen 3.5 4B | ~2.8 GB | Full quality (~5-7s) |
 
-Speech models powered by [WhisperKit](https://github.com/argmaxinc/WhisperKit). Cleanup models powered by [LLM.swift](https://github.com/eastriverlee/LLM.swift). All models served by [Hugging Face](https://huggingface.co/).
+Speech models powered by [WhisperKit](https://github.com/argmaxinc/WhisperKit) and [moonshine-mlx](https://github.com/kylehowells/moonshine-mlx). Cleanup models powered by [LLM.swift](https://github.com/eastriverlee/LLM.swift). All models served by [Hugging Face](https://huggingface.co/).
 
 ## Getting started
 
@@ -48,10 +53,15 @@ Speech models powered by [WhisperKit](https://github.com/argmaxinc/WhisperKit). 
 
 > **"Apple could not verify" warning?** On macOS Sequoia, you may see a Gatekeeper warning the first time you open the app. Go to **System Settings > Privacy & Security**, scroll down, and click **Open Anyway** next to the Ghost Pepper message. Click **Confirm** in the popup. You only need to do this once.
 
-**Build from source:**
+**Build from source (personal use):**
 1. Clone the repo
-2. Open `GhostPepper.xcodeproj` in Xcode
-3. Build and run (Cmd+R)
+2. Install [xcodegen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
+3. Edit `project.yml` — change `DEVELOPMENT_TEAM` to your own Apple team ID
+4. Run `xcodegen generate` to regenerate the Xcode project
+5. Open `GhostPepper.xcodeproj` in Xcode, sign in with your Apple ID under Settings → Accounts, and create an Apple Development certificate (Manage Certificates → +)
+6. Build and run (Cmd+R)
+
+> **Why signing matters:** macOS requires a valid code signature to grant Accessibility and Input Monitoring permissions. Ad-hoc signing (`-`) won't work — you need a personal Apple Development certificate (free with any Apple ID).
 
 ## Permissions
 
@@ -67,7 +77,7 @@ Speech models powered by [WhisperKit](https://github.com/argmaxinc/WhisperKit). 
 
 ## Acknowledgments
 
-Built with [WhisperKit](https://github.com/argmaxinc/WhisperKit), [LLM.swift](https://github.com/eastriverlee/LLM.swift), [Hugging Face](https://huggingface.co/), and [Sparkle](https://sparkle-project.org/).
+Built with [WhisperKit](https://github.com/argmaxinc/WhisperKit), [moonshine-mlx](https://github.com/kylehowells/moonshine-mlx), [FluidAudio](https://github.com/FluidInference/FluidAudio), [LLM.swift](https://github.com/eastriverlee/LLM.swift), [Hugging Face](https://huggingface.co/), and [Sparkle](https://sparkle-project.org/).
 
 ## License
 
