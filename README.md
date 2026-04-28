@@ -73,6 +73,28 @@ Speech models powered by [WhisperKit](https://github.com/argmaxinc/WhisperKit). 
 2. Open `GhostPepper.xcodeproj` in Xcode
 3. Build and run (Cmd+R)
 
+**Local CLI install for development:**
+1. Create local secrets: `cp GhostPepper/Secrets.example GhostPepper/Secrets.swift` and fill in Google OAuth values if you want Calendar integration. The file is gitignored; placeholder values are enough for local builds.
+2. Build with a local Apple Development certificate. Replace `<TEAM_ID>` with the team ID from your signing certificate:
+   ```sh
+   xcodebuild build -project GhostPepper.xcodeproj -scheme GhostPepper -configuration Debug -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/ghost-pepper-debug-derived-data -skipMacroValidation -skipPackagePluginValidation ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGN_STYLE=Automatic CODE_SIGN_IDENTITY='Apple Development' DEVELOPMENT_TEAM=<TEAM_ID> PROVISIONING_PROFILE_SPECIFIER=
+   ```
+3. Install the built app to the same path used by the release app. Note the space in `Ghost Pepper.app`:
+   ```sh
+   rm -rf "/Applications/Ghost Pepper.app"
+   ditto --rsrc --extattr "/tmp/ghost-pepper-debug-derived-data/Build/Products/Debug/GhostPepper.app" "/Applications/Ghost Pepper.app"
+   xattr -dr com.apple.quarantine "/Applications/Ghost Pepper.app" 2>/dev/null || true
+   open "/Applications/Ghost Pepper.app"
+   ```
+4. If macOS privacy permissions do not carry over after reinstalling, reset the old TCC rows and grant permissions again:
+   ```sh
+   tccutil reset Accessibility com.github.matthartman.ghostpepper
+   tccutil reset ListenEvent com.github.matthartman.ghostpepper
+   tccutil reset Microphone com.github.matthartman.ghostpepper
+   tccutil reset ScreenCapture com.github.matthartman.ghostpepper
+   ```
+   For Input Monitoring, use `+` in System Settings and select `/Applications/Ghost Pepper.app` if the app does not appear automatically.
+
 ## Permissions
 
 | Permission | Why |
